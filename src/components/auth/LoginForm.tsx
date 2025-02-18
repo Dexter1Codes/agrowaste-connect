@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
-import { User, Lock, Mail } from "lucide-react";
+import { User, Lock, Mail, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = () => {
@@ -14,6 +14,7 @@ const LoginForm = () => {
     email: "",
     password: "",
     fullName: "",
+    role: "farmer" as "farmer" | "dealer" | "admin",
   });
   const navigate = useNavigate();
 
@@ -29,6 +30,7 @@ const LoginForm = () => {
           options: {
             data: {
               full_name: formData.fullName,
+              role: formData.role,
             },
           },
         });
@@ -68,25 +70,48 @@ const LoginForm = () => {
     <div className="space-y-6 animate-fadeIn">
       <form onSubmit={handleSubmit} className="space-y-4">
         {isSignUp && (
-          <div className="space-y-2">
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-gray-400" />
+          <>
+            <div className="space-y-2">
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="John Doe"
+                  className="pl-10 input-ring"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  required={isSignUp}
+                />
               </div>
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="John Doe"
-                className="pl-10 input-ring"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                required={isSignUp}
-              />
             </div>
-          </div>
+            <div className="space-y-2">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                Role
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Building2 className="h-5 w-5 text-gray-400" />
+                </div>
+                <select
+                  id="role"
+                  className="pl-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as "farmer" | "dealer" | "admin" })}
+                  required
+                >
+                  <option value="farmer">Farmer</option>
+                  <option value="dealer">Dealer</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+          </>
         )}
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -175,4 +200,3 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
-
