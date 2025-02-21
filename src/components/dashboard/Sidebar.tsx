@@ -1,7 +1,14 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, List, ShoppingCart, Book, MessageSquare, Settings } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Recycle, 
+  ShoppingCart, 
+  Book, 
+  MessageSquare, 
+  Settings 
+} from "lucide-react";
 
 const navItems = [
   {
@@ -12,7 +19,7 @@ const navItems = [
   {
     title: "Waste Management",
     href: "/dashboard/waste",
-    icon: List,
+    icon: Recycle,
   },
   {
     title: "Orders",
