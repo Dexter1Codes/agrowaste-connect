@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -41,25 +42,37 @@ const LoginForm = () => {
           description: "Please check your email to verify your account.",
         });
       } else {
-        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+        console.log("Attempting to sign in...");
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
 
-        if (signInError) throw signInError;
-
-        if (user?.user_metadata?.role === 'farmer') {
-          navigate("/dashboard");
-        } else {
-          navigate("/dashboard");
+        if (signInError) {
+          console.error("Sign in error:", signInError);
+          throw signInError;
         }
 
+        console.log("Sign in successful, user data:", data);
+        
+        // Show success toast first
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
+
+        // Then redirect based on role
+        const userRole = data.user?.user_metadata?.role;
+        console.log("User role:", userRole);
+
+        // Force the navigation to happen after a short delay to ensure the auth state is updated
+        setTimeout(() => {
+          console.log("Navigating to dashboard...");
+          navigate("/dashboard", { replace: true });
+        }, 100);
       }
     } catch (error: any) {
+      console.error("Authentication error:", error);
       toast({
         title: "Authentication error",
         description: error.message,
