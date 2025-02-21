@@ -53,7 +53,7 @@ const LoginForm = () => {
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate("/");
+        navigate("/dashboard"); // Changed from "/" to "/dashboard"
       }
     } catch (error: any) {
       toast({
