@@ -11,6 +11,7 @@ import Verify from "./pages/Verify";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/dashboard/Index";
 import WasteDashboard from "./pages/dashboard/waste/Index";
+import NewWasteListing from "./pages/dashboard/waste/NewWasteListing";
 import Orders from "./pages/dashboard/orders/Index";
 import Learning from "./pages/dashboard/learning/Index";
 import Messages from "./pages/dashboard/messages/Index";
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/verify" element={<Verify />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/waste" element={<WasteDashboard />} />
+            <Route path="/dashboard/waste/new" element={<NewWasteListing />} />
             <Route path="/dashboard/orders" element={<Orders />} />
             <Route path="/dashboard/learning" element={<Learning />} />
             <Route path="/dashboard/messages" element={<Messages />} />
