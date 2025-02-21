@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -42,18 +41,23 @@ const LoginForm = () => {
           description: "Please check your email to verify your account.",
         });
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
 
         if (signInError) throw signInError;
 
+        if (user?.user_metadata?.role === 'farmer') {
+          navigate("/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        navigate("/dashboard"); // Changed from "/" to "/dashboard"
       }
     } catch (error: any) {
       toast({
