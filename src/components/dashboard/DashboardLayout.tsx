@@ -57,5 +57,5 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     </div>
   );
 };
-
+// This creates the dashboard layout and makes sure all the things are intact and running in the dashboard page.
 export default DashboardLayout;
