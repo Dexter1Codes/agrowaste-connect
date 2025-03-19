@@ -65,5 +65,5 @@ const TwoFactorAuth = () => {
     </div>
   );
 };
-
+// This helps in creating the two factor authentication for the website.
 export default TwoFactorAuth;
