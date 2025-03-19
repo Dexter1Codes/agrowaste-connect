@@ -18,5 +18,5 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
     </div>
   );
 };
-
+// This exports the authentication layout for the website.
 export default AuthLayout;
