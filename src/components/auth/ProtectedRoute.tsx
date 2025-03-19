@@ -27,6 +27,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   return session ? <>{children}</> : null;
 };
-
+// This creates the protected route for the creation.
 export default ProtectedRoute;
 
