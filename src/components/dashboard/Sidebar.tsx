@@ -1,4 +1,4 @@
-
+// This creates the sidebar that is shown while the dashboard page is displayed.
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
