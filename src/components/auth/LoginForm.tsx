@@ -215,5 +215,5 @@ const LoginForm = () => {
     </div>
   );
 };
-
+//This is the login form.
 export default LoginForm;
