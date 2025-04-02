@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface AuthContextType {
   session: Session | null;
@@ -41,18 +42,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInWithGoogle = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log("Starting Google sign-in process...");
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin + "/dashboard",
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         },
       });
       
       if (error) {
+        console.error("Google sign-in error:", error);
+        toast({
+          title: "Login failed",
+          description: error.message || "Could not sign in with Google. Please try again.",
+          variant: "destructive",
+        });
         throw error;
       }
+      
+      console.log("Auth response:", data);
+      // The redirect happens automatically, no need to handle it here
     } catch (error) {
-      console.error("Error logging in with Google:", error);
+      console.error("Error during Google sign-in:", error);
+      toast({
+        title: "Login error",
+        description: "An unexpected error occurred. Please try again later.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
@@ -61,10 +82,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
+        console.error("Sign out error:", error);
+        toast({
+          title: "Sign out failed",
+          description: error.message,
+          variant: "destructive",
+        });
         throw error;
       }
     } catch (error) {
       console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: "An unexpected error occurred while signing out.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
