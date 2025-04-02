@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [supabaseStatus, setSupabaseStatus] = useState<"checking" | "connected" | "error">("checking");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -17,6 +18,33 @@ const LoginForm = () => {
     role: "farmer" as "farmer" | "dealer" | "admin",
   });
   const navigate = useNavigate();
+
+  // Check Supabase connection on component mount
+  useEffect(() => {
+    const checkSupabaseConnection = async () => {
+      try {
+        // Simple query to test the connection
+        const { data, error } = await supabase.from('profiles').select('count(*)');
+        if (error) throw error;
+        console.log("Supabase connection successful:", data);
+        setSupabaseStatus("connected");
+        toast({
+          title: "Supabase Connected",
+          description: "Connection to Supabase is working properly.",
+        });
+      } catch (error) {
+        console.error("Supabase connection error:", error);
+        setSupabaseStatus("error");
+        toast({
+          title: "Supabase Connection Error",
+          description: "Unable to connect to Supabase. Please check your configuration.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    checkSupabaseConnection();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +113,21 @@ const LoginForm = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
+      {supabaseStatus === "checking" && (
+        <div className="p-2 bg-yellow-50 text-yellow-700 rounded flex items-center justify-center">
+          Checking Supabase connection...
+        </div>
+      )}
+      {supabaseStatus === "error" && (
+        <div className="p-2 bg-red-50 text-red-700 rounded flex items-center justify-center">
+          Error connecting to Supabase. Please check your configuration.
+        </div>
+      )}
+      {supabaseStatus === "connected" && (
+        <div className="p-2 bg-green-50 text-green-700 rounded flex items-center justify-center">
+          Connected to Supabase successfully!
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         {isSignUp && (
           <>
@@ -215,5 +258,5 @@ const LoginForm = () => {
     </div>
   );
 };
-//This is the login form.
+
 export default LoginForm;
