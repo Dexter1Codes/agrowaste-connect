@@ -15,6 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+// Define the waste type as a TypeScript type that matches the Supabase enum
+type WasteType = Database['public']['Enums']['waste_type'];
 
 const wasteTypes = [
   { value: "coconut_husks", label: "Coconut Husks" },
@@ -31,7 +35,7 @@ const NewWasteListing = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    waste_type: "",
+    waste_type: "" as WasteType,
     quantity: "",
     unit: "",
     price: "",
@@ -66,7 +70,7 @@ const NewWasteListing = () => {
         imageUrls.push(publicUrl);
       }
 
-      // Create waste listing
+      // Create waste listing - ensure waste_type is properly typed
       const { error: insertError } = await supabase
         .from("waste_listings")
         .insert({
@@ -119,7 +123,7 @@ const NewWasteListing = () => {
               <label className="block text-sm font-medium text-gray-700">Waste Type</label>
               <Select
                 value={formData.waste_type}
-                onValueChange={(value) => setFormData({ ...formData, waste_type: value })}
+                onValueChange={(value) => setFormData({ ...formData, waste_type: value as WasteType })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select waste type" />
