@@ -83,8 +83,15 @@ const LoginForm = () => {
 
         // Force the navigation to happen after a short delay to ensure the auth state is updated
         setTimeout(() => {
-          console.log("Navigating to dashboard...");
-          navigate("/dashboard", { replace: true });
+          console.log("Navigating to dashboard based on role...");
+          
+          // Redirect based on user role
+          if (userRole === 'dealer') {
+            navigate("/dealer", { replace: true });
+          } else {
+            // Default to farmer dashboard or handle other roles
+            navigate("/dashboard", { replace: true });
+          }
         }, 100);
       }
     } catch (error: any) {
