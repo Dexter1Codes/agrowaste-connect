@@ -16,6 +16,7 @@ import Orders from "./pages/dashboard/orders/Index";
 import Learning from "./pages/dashboard/learning/Index";
 import Messages from "./pages/dashboard/messages/Index";
 import Settings from "./pages/dashboard/settings/Index";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/waste" element={<WasteDashboard />} />
             <Route path="/dashboard/waste/new" element={<NewWasteListing />} />

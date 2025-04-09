@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +8,22 @@ import { User, Lock, Mail, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/providers/AuthProvider";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -18,7 +31,7 @@ const LoginForm = () => {
     role: "farmer" as "farmer" | "dealer" | "admin",
   });
 
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,6 +110,25 @@ const LoginForm = () => {
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await resetPassword(resetEmail);
+      setIsResetDialogOpen(false);
+    } catch (error) {
+      // Errors are already handled in the resetPassword function
     }
   };
 
@@ -219,16 +251,51 @@ const LoginForm = () => {
             </label>
           </div>
           {!isSignUp && (
-            <button
-              type="button"
-              className="text-sm font-medium text-primary hover:text-primary-600"
-              onClick={() => toast({
-                title: "Reset password",
-                description: "This feature will be implemented soon.",
-              })}
-            >
-              Forgot password?
-            </button>
+            <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+              <DialogTrigger asChild>
+                <button
+                  type="button"
+                  className="text-sm font-medium text-primary hover:text-primary-600"
+                >
+                  Forgot password?
+                </button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Reset Password</DialogTitle>
+                  <DialogDescription>
+                    Enter your email address and we'll send you a link to reset your password.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handlePasswordReset} className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <Input
+                        id="resetEmail"
+                        type="email"
+                        placeholder="you@example.com"
+                        className="pl-10 input-ring"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit">Send Reset Link</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
         <Button
