@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Starting Google sign-in process with role:", role);
       
+      // In Supabase v2, use custom params to pass the role
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -53,9 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          },
-          data: {
-            role: role, // Store role in user metadata
+            // Pass role in the state param which can be recovered after auth
+            state: JSON.stringify({ role })
           }
         },
       });

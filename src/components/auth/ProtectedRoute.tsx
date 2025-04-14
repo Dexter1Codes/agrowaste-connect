@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -22,6 +21,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
         }
 
         if (requiredRole) {
+          // Get the user role from the metadata
           const userRole = session.user.user_metadata.role;
           console.log("Checking role access:", { required: requiredRole, user: userRole });
 
