@@ -37,29 +37,30 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             
-            {/* Farmer Dashboard Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/waste" element={<ProtectedRoute><WasteDashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/waste/new" element={<ProtectedRoute><NewWasteListing /></ProtectedRoute>} />
-            <Route path="/dashboard/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-            <Route path="/dashboard/learning" element={<ProtectedRoute><Learning /></ProtectedRoute>} />
-            <Route path="/dashboard/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-            <Route path="/dashboard/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            {/* Farmer Dashboard Routes - Protected for farmers */}
+            <Route path="/dashboard" element={<ProtectedRoute requiredRole="farmer"><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/waste" element={<ProtectedRoute requiredRole="farmer"><WasteDashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/waste/new" element={<ProtectedRoute requiredRole="farmer"><NewWasteListing /></ProtectedRoute>} />
+            <Route path="/dashboard/orders" element={<ProtectedRoute requiredRole="farmer"><Orders /></ProtectedRoute>} />
+            <Route path="/dashboard/learning" element={<ProtectedRoute requiredRole="farmer"><Learning /></ProtectedRoute>} />
+            <Route path="/dashboard/messages" element={<ProtectedRoute requiredRole="farmer"><Messages /></ProtectedRoute>} />
+            <Route path="/dashboard/settings" element={<ProtectedRoute requiredRole="farmer"><Settings /></ProtectedRoute>} />
             
-            {/* Dealer Dashboard Routes */}
-            <Route path="/dealer" element={<ProtectedRoute><DealerDashboard /></ProtectedRoute>} />
-            <Route path="/dealer/listings" element={<ProtectedRoute><BrowseListings /></ProtectedRoute>} />
-            <Route path="/dealer/orders" element={<ProtectedRoute><DealerOrders /></ProtectedRoute>} />
-            <Route path="/dealer/messages" element={<ProtectedRoute><DealerMessages /></ProtectedRoute>} />
-            <Route path="/dealer/logistics" element={<ProtectedRoute><Logistics /></ProtectedRoute>} />
-            <Route path="/dealer/reviews" element={<ProtectedRoute><Reviews /></ProtectedRoute>} />
-            <Route path="/dealer/learning" element={<ProtectedRoute><DealerLearning /></ProtectedRoute>} />
-            <Route path="/dealer/settings" element={<ProtectedRoute><DealerSettings /></ProtectedRoute>} />
+            {/* Dealer Dashboard Routes - Protected for dealers */}
+            <Route path="/dealer" element={<ProtectedRoute requiredRole="dealer"><DealerDashboard /></ProtectedRoute>} />
+            <Route path="/dealer/listings" element={<ProtectedRoute requiredRole="dealer"><BrowseListings /></ProtectedRoute>} />
+            <Route path="/dealer/orders" element={<ProtectedRoute requiredRole="dealer"><DealerOrders /></ProtectedRoute>} />
+            <Route path="/dealer/messages" element={<ProtectedRoute requiredRole="dealer"><DealerMessages /></ProtectedRoute>} />
+            <Route path="/dealer/logistics" element={<ProtectedRoute requiredRole="dealer"><Logistics /></ProtectedRoute>} />
+            <Route path="/dealer/reviews" element={<ProtectedRoute requiredRole="dealer"><Reviews /></ProtectedRoute>} />
+            <Route path="/dealer/learning" element={<ProtectedRoute requiredRole="dealer"><DealerLearning /></ProtectedRoute>} />
+            <Route path="/dealer/settings" element={<ProtectedRoute requiredRole="dealer"><DealerSettings /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

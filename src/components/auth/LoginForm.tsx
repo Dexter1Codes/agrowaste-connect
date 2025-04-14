@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,20 @@ const LoginForm = () => {
 
   const { signInWithGoogle, resetPassword } = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle(formData.role); // Pass the selected role
+      // The redirect will be handled by Supabase's OAuth flow
+    } catch (error: any) {
+      console.error("Google sign in error:", error);
+      toast({
+        title: "Authentication error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +90,7 @@ const LoginForm = () => {
           description: "You have successfully logged in.",
         });
 
-        // Then redirect based on role
+        // Get user role from metadata
         const userRole = data.user?.user_metadata?.role;
         console.log("User role:", userRole);
 
@@ -103,20 +116,6 @@ const LoginForm = () => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-      // The redirect will be handled by Supabase's OAuth flow
-    } catch (error: any) {
-      console.error("Google sign in error:", error);
-      toast({
-        title: "Authentication error",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   };
 

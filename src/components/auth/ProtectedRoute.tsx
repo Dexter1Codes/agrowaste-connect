@@ -2,20 +2,44 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: "farmer" | "dealer" | "admin";
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !session) {
-      navigate("/login");
-    }
-  }, [session, isLoading, navigate]);
+    const checkAuthAndRole = async () => {
+      if (!isLoading) {
+        if (!session) {
+          navigate("/login");
+          return;
+        }
+
+        if (requiredRole) {
+          const userRole = session.user.user_metadata.role;
+          console.log("Checking role access:", { required: requiredRole, user: userRole });
+
+          if (userRole !== requiredRole) {
+            console.log("Invalid role access, redirecting to appropriate dashboard");
+            // Redirect to appropriate dashboard based on actual role
+            if (userRole === "dealer") {
+              navigate("/dealer");
+            } else {
+              navigate("/dashboard");
+            }
+          }
+        }
+      }
+    };
+
+    checkAuthAndRole();
+  }, [session, isLoading, navigate, requiredRole]);
 
   if (isLoading) {
     return (
@@ -27,6 +51,5 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   return session ? <>{children}</> : null;
 };
-// This creates the protected route for the creation.
-export default ProtectedRoute;
 
+export default ProtectedRoute;

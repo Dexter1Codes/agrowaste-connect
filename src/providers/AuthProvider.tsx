@@ -7,7 +7,7 @@ import { toast } from "@/components/ui/use-toast";
 interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (role: "farmer" | "dealer" | "admin") => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
@@ -42,9 +42,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (role: "farmer" | "dealer" | "admin") => {
     try {
-      console.log("Starting Google sign-in process...");
+      console.log("Starting Google sign-in process with role:", role);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -53,6 +53,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
+          },
+          data: {
+            role: role, // Store role in user metadata
           }
         },
       });
