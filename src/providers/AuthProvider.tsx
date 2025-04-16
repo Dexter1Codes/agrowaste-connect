@@ -69,16 +69,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Starting Google sign-in process with role:", role);
       
+      // Fixed: Move the role into queryParams instead of using 'data'
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
+            role: role, // Pass role as a query parameter
           },
-          data: {
-            role: role, // Pass role in user metadata
-          }
+          redirectTo: `${window.location.origin}`,
         }
       });
       

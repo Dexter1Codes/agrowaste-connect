@@ -1,11 +1,11 @@
 
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -13,12 +13,11 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
+      await signOut();
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account.",
@@ -57,5 +56,5 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     </div>
   );
 };
-// This creates the dashboard layout and makes sure all the things are intact and running in the dashboard page.
+
 export default DashboardLayout;

@@ -1,7 +1,8 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,6 +12,8 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [checkingRole, setCheckingRole] = useState(true);
 
   useEffect(() => {
     const checkAuthAndRole = async () => {
@@ -21,19 +24,40 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
         }
 
         if (requiredRole) {
-          // Get the user role from the metadata
-          const userRole = session.user.user_metadata.role;
-          console.log("Checking role access:", { required: requiredRole, user: userRole });
+          try {
+            // Get the user role from the profiles table
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single();
 
-          if (userRole !== requiredRole) {
-            console.log("Invalid role access, redirecting to appropriate dashboard");
-            // Redirect to appropriate dashboard based on actual role
-            if (userRole === "dealer") {
-              navigate("/dealer");
-            } else {
-              navigate("/dashboard");
+            if (error) {
+              console.error("Error fetching role:", error);
+              navigate("/login");
+              return;
             }
+
+            setUserRole(profile?.role || null);
+            console.log("Checking role access:", { required: requiredRole, user: profile?.role });
+
+            if (profile?.role !== requiredRole) {
+              console.log("Invalid role access, redirecting to appropriate dashboard");
+              // Redirect to appropriate dashboard based on actual role
+              if (profile?.role === "dealer") {
+                navigate("/dealer");
+              } else {
+                navigate("/dashboard");
+              }
+            }
+          } catch (error) {
+            console.error("Error checking role:", error);
+            navigate("/login");
+          } finally {
+            setCheckingRole(false);
           }
+        } else {
+          setCheckingRole(false);
         }
       }
     };
@@ -41,7 +65,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     checkAuthAndRole();
   }, [session, isLoading, navigate, requiredRole]);
 
-  if (isLoading) {
+  if (isLoading || (requiredRole && checkingRole)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
