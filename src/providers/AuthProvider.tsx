@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,17 +45,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Starting Google sign-in process with role:", role);
       
-      // In Supabase v2, use custom params to pass the role
+      // Simple Google sign-in without custom data to ensure it works
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-            // Pass role in the state param which can be recovered after auth
-            state: JSON.stringify({ role })
-          }
         },
       });
       
