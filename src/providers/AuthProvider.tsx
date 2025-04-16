@@ -37,29 +37,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setIsLoading(false);
-
-      // If user just signed in, check their role and redirect accordingly
-      if (session?.user) {
-        try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profile) {
-            // Redirect based on user role
-            if (profile.role === 'dealer') {
-              window.location.href = '/dealer';
-            } else {
-              // Default to farmer dashboard
-              window.location.href = '/dashboard';
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-        }
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -69,16 +46,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Starting Google sign-in process with role:", role);
       
-      // Fixed: Move the role into queryParams instead of using 'data'
+      // Store the role in localStorage for use after redirect
+      localStorage.setItem("intended_role", role);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-            role: role, // Pass role as a query parameter
           },
-          redirectTo: `${window.location.origin}`,
+          redirectTo: `${window.location.origin}/verify?role=${role}`,
         }
       });
       
