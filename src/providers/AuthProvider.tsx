@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,11 +46,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Starting Google sign-in process with role:", role);
       
-      // Simple Google sign-in without custom data to ensure it works
+      // Get the current window's origin for the redirect URL
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      console.log("Using redirect URL:", redirectUrl);
+      
+      // Basic Google sign-in with minimal options to prevent issues
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: redirectUrl,
         },
       });
       
