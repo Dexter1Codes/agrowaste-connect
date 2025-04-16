@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,9 +34,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setIsLoading(false);
+
+      // If user just signed in, check their role and redirect accordingly
+      if (session?.user) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile) {
+            // Redirect based on user role
+            if (profile.role === 'dealer') {
+              window.location.href = '/dealer';
+            } else {
+              // Default to farmer dashboard
+              window.location.href = '/dashboard';
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -45,9 +69,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log("Starting Google sign-in process with role:", role);
       
-      // Fix: Use the simplest possible configuration
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+          data: {
+            role: role, // Pass role in user metadata
+          }
+        }
       });
       
       if (error) {
@@ -59,8 +91,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
         throw error;
       }
-      
-      // The redirect happens automatically, no need to handle it here
     } catch (error) {
       console.error("Error during Google sign-in:", error);
       toast({
