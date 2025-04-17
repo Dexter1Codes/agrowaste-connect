@@ -1,32 +1,50 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, User } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Send } from "lucide-react";
 import { useMessages } from '@/hooks/useMessages';
 import { supabase } from '@/integrations/supabase/client';
+import ConversationList from '@/components/messages/ConversationList';
+import ChatMessages from '@/components/messages/ChatMessages';
 
 const Messages = () => {
   const { messages, sendMessage } = useMessages();
   const [newMessage, setNewMessage] = useState('');
   const [selectedDealer, setSelectedDealer] = useState<string | null>(null);
-
   const [dealers, setDealers] = useState<any[]>([]);
+  
+  // Filter messages for the selected conversation
+  const conversationMessages = messages.filter(
+    msg => (msg.sender_id === selectedDealer || msg.receiver_id === selectedDealer)
+  );
 
-  React.useEffect(() => {
+  const selectedDealerDetails = dealers.find(dealer => dealer.id === selectedDealer);
+
+  useEffect(() => {
     const fetchDealers = async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('role', 'dealer');
 
-      if (data) setDealers(data);
+      if (data) {
+        // Add last message to each dealer's data
+        const dealersWithLastMessage = data.map(dealer => {
+          const dealerMessages = messages.filter(
+            msg => msg.sender_id === dealer.id || msg.receiver_id === dealer.id
+          );
+          const lastMessage = dealerMessages[dealerMessages.length - 1]?.content;
+          return { ...dealer, last_message: lastMessage };
+        });
+        setDealers(dealersWithLastMessage);
+      }
     };
 
     fetchDealers();
-  }, []);
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (selectedDealer && newMessage.trim()) {
@@ -38,67 +56,53 @@ const Messages = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Messages & Support</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-2 text-primary">
-              <MessageSquare className="h-5 w-5" />
-              <h3 className="font-medium">Chat with Dealers</h3>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Select Dealer</label>
-              <select 
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                onChange={(e) => setSelectedDealer(e.target.value)}
-              >
-                <option value="">Select a dealer</option>
-                {dealers.map((dealer) => (
-                  <option key={dealer.id} value={dealer.id}>
-                    {dealer.full_name || 'Unnamed Dealer'}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              {messages.map((msg) => (
-                <div 
-                  key={msg.id} 
-                  className={`p-2 rounded ${
-                    msg.sender_id === selectedDealer 
-                      ? 'bg-gray-100 text-left' 
-                      : 'bg-primary text-white text-right'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex space-x-2 mt-4">
-              <Input 
-                placeholder="Type a message..." 
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                disabled={!selectedDealer}
-              />
-              <Button 
-                onClick={handleSendMessage} 
-                disabled={!selectedDealer || !newMessage.trim()}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
+        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
+          {/* Conversations List */}
+          <Card className="col-span-4 p-4 overflow-y-auto">
+            <ConversationList 
+              conversations={dealers}
+              selectedId={selectedDealer || undefined}
+              onSelect={(id) => setSelectedDealer(id)}
+            />
           </Card>
-          
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center space-x-2 text-primary">
-              <User className="h-5 w-5" />
-              <h3 className="font-medium">Support & Help Desk</h3>
-            </div>
-            <p className="text-gray-600">Need help? Our support team is here for you.</p>
+
+          {/* Chat Area */}
+          <Card className="col-span-8 flex flex-col">
+            {selectedDealer ? (
+              <>
+                <div className="border-b p-4">
+                  <h2 className="font-semibold">
+                    {selectedDealerDetails?.full_name || 'Unnamed Dealer'}
+                  </h2>
+                </div>
+
+                <ChatMessages 
+                  messages={conversationMessages}
+                  participantName={selectedDealerDetails?.full_name || 'Unnamed Dealer'}
+                />
+
+                <div className="border-t p-4 flex gap-2">
+                  <Input 
+                    placeholder="Type a message..." 
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  />
+                  <Button 
+                    onClick={handleSendMessage} 
+                    disabled={!newMessage.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                Select a conversation to start messaging
+              </div>
+            )}
           </Card>
         </div>
       </div>

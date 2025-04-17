@@ -1,32 +1,50 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DealerLayout from "@/components/dealer/DealerLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Send, User } from "lucide-react";
+import { Send } from "lucide-react";
 import { useMessages } from '@/hooks/useMessages';
 import { supabase } from '@/integrations/supabase/client';
+import ConversationList from '@/components/messages/ConversationList';
+import ChatMessages from '@/components/messages/ChatMessages';
 
 const DealerMessages = () => {
   const { messages, sendMessage } = useMessages();
   const [newMessage, setNewMessage] = useState('');
   const [selectedFarmer, setSelectedFarmer] = useState<string | null>(null);
-
   const [farmers, setFarmers] = useState<any[]>([]);
+  
+  // Filter messages for the selected conversation
+  const conversationMessages = messages.filter(
+    msg => (msg.sender_id === selectedFarmer || msg.receiver_id === selectedFarmer)
+  );
 
-  React.useEffect(() => {
+  const selectedFarmerDetails = farmers.find(farmer => farmer.id === selectedFarmer);
+
+  useEffect(() => {
     const fetchFarmers = async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('role', 'farmer');
 
-      if (data) setFarmers(data);
+      if (data) {
+        // Add last message to each farmer's data
+        const farmersWithLastMessage = data.map(farmer => {
+          const farmerMessages = messages.filter(
+            msg => msg.sender_id === farmer.id || msg.receiver_id === farmer.id
+          );
+          const lastMessage = farmerMessages[farmerMessages.length - 1]?.content;
+          return { ...farmer, last_message: lastMessage };
+        });
+        setFarmers(farmersWithLastMessage);
+      }
     };
 
     fetchFarmers();
-  }, []);
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (selectedFarmer && newMessage.trim()) {
@@ -38,54 +56,55 @@ const DealerMessages = () => {
   return (
     <DealerLayout>
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Messaging Center</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
         
-        <Card className="p-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Select Farmer</label>
-            <select 
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              onChange={(e) => setSelectedFarmer(e.target.value)}
-            >
-              <option value="">Select a farmer</option>
-              {farmers.map((farmer) => (
-                <option key={farmer.id} value={farmer.id}>
-                  {farmer.full_name || 'Unnamed Farmer'}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            {messages.map((msg) => (
-              <div 
-                key={msg.id} 
-                className={`p-2 rounded ${
-                  msg.sender_id === selectedFarmer 
-                    ? 'bg-gray-100 text-left' 
-                    : 'bg-primary text-white text-right'
-                }`}
-              >
-                {msg.content}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex space-x-2 mt-4">
-            <Input 
-              placeholder="Type a message..." 
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              disabled={!selectedFarmer}
+        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
+          {/* Conversations List */}
+          <Card className="col-span-4 p-4 overflow-y-auto">
+            <ConversationList 
+              conversations={farmers}
+              selectedId={selectedFarmer || undefined}
+              onSelect={(id) => setSelectedFarmer(id)}
             />
-            <Button 
-              onClick={handleSendMessage} 
-              disabled={!selectedFarmer || !newMessage.trim()}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </Card>
+          </Card>
+
+          {/* Chat Area */}
+          <Card className="col-span-8 flex flex-col">
+            {selectedFarmer ? (
+              <>
+                <div className="border-b p-4">
+                  <h2 className="font-semibold">
+                    {selectedFarmerDetails?.full_name || 'Unnamed Farmer'}
+                  </h2>
+                </div>
+
+                <ChatMessages 
+                  messages={conversationMessages}
+                  participantName={selectedFarmerDetails?.full_name || 'Unnamed Farmer'}
+                />
+
+                <div className="border-t p-4 flex gap-2">
+                  <Input 
+                    placeholder="Type a message..." 
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  />
+                  <Button 
+                    onClick={handleSendMessage} 
+                    disabled={!newMessage.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-gray-500">
+                Select a conversation to start messaging
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
     </DealerLayout>
   );
