@@ -46,7 +46,9 @@ const DealerMessages = () => {
     fetchFarmers();
   }, [messages]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     if (selectedFarmer && newMessage.trim()) {
       await sendMessage(selectedFarmer, newMessage);
       setNewMessage('');
@@ -83,20 +85,19 @@ const DealerMessages = () => {
                   participantName={selectedFarmerDetails?.full_name || 'Unnamed Farmer'}
                 />
 
-                <div className="border-t p-4 flex gap-2">
+                <form onSubmit={handleSendMessage} className="border-t p-4 flex gap-2">
                   <Input 
                     placeholder="Type a message..." 
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   />
                   <Button 
-                    onClick={handleSendMessage} 
+                    type="submit"
                     disabled={!newMessage.trim()}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
-                </div>
+                </form>
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-500">
