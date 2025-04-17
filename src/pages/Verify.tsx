@@ -5,9 +5,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/providers/AuthProvider";
 
+// Define a type for the allowed roles
+type UserRole = "farmer" | "dealer" | "admin";
+
 const Verify = () => {
   const [searchParams] = useSearchParams();
-  const role = searchParams.get("role") || localStorage.getItem("intended_role") || "farmer";
+  // Cast the role value to the UserRole type after validation
+  const roleParam = searchParams.get("role") || localStorage.getItem("intended_role") || "farmer";
+  // Validate that the role is one of the allowed values
+  const role: UserRole = (["farmer", "dealer", "admin"].includes(roleParam) 
+    ? roleParam 
+    : "farmer") as UserRole;
+  
   const navigate = useNavigate();
   const { session } = useAuth();
   const [isProcessing, setIsProcessing] = useState(true);
