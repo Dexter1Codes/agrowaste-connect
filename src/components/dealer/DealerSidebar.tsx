@@ -16,6 +16,13 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarHeader, 
+  SidebarTrigger,
+  SidebarFooter 
+} from "@/components/ui/sidebar";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -99,28 +106,33 @@ const DealerSidebar = () => {
   ];
 
   return (
-    <div className="h-full py-4 flex flex-col">
-      <div className="px-4 mb-6">
-        <h2 className="text-lg font-bold">WasteTrade</h2>
-        <p className="text-sm text-gray-500">Dealer Portal</p>
-      </div>
-
-      <ScrollArea className="flex-1 px-2">
-        <div className="space-y-1">
-          {navItems.map((item) => (
-            <NavItem
-              key={item.href}
-              icon={item.icon}
-              label={item.label}
-              href={item.href}
-              active={location.pathname === item.href}
-              badge={item.badge}
-            />
-          ))}
+    <Sidebar>
+      <SidebarHeader className="p-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-bold">WasteTrade</h2>
+          <SidebarTrigger />
         </div>
-      </ScrollArea>
+        <p className="text-sm text-gray-500">Dealer Portal</p>
+      </SidebarHeader>
 
-      <div className="mt-auto pt-4 px-2 border-t">
+      <SidebarContent>
+        <ScrollArea className="flex-1 px-2">
+          <div className="space-y-1">
+            {navItems.map((item) => (
+              <NavItem
+                key={item.href}
+                icon={item.icon}
+                label={item.label}
+                href={item.href}
+                active={location.pathname === item.href}
+                badge={item.badge}
+              />
+            ))}
+          </div>
+        </ScrollArea>
+      </SidebarContent>
+
+      <SidebarFooter className="mt-auto pt-4 px-2 border-t">
         <Button
           variant="ghost"
           className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50 mb-1"
@@ -129,8 +141,8 @@ const DealerSidebar = () => {
           <LogOut className="h-5 w-5" />
           <span className="ml-2">Logout</span>
         </Button>
-      </div>
-    </div>
+      </SidebarFooter>
+    </Sidebar>
   );
 };
 

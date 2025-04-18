@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DealerLayout from "@/components/dealer/DealerLayout";
 import { Card } from "@/components/ui/card";
@@ -15,6 +14,33 @@ const Cart = () => {
   const navigate = useNavigate();
   const { items, removeItem, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [sellers, setSellers] = useState<Record<string, { full_name: string }>>({});
+
+  // Fetch seller information for each item
+  useEffect(() => {
+    const fetchSellers = async () => {
+      const sellerIds = [...new Set(items.map(item => item.user_id))];
+      
+      for (const sellerId of sellerIds) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', sellerId)
+          .single();
+          
+        if (!error && data) {
+          setSellers(prev => ({
+            ...prev,
+            [sellerId]: data
+          }));
+        }
+      }
+    };
+
+    if (items.length > 0) {
+      fetchSellers();
+    }
+  }, [items]);
 
   const handleQuantityChange = (id: string, increment: number) => {
     const item = items.find(item => item.id === id);
@@ -99,7 +125,6 @@ const Cart = () => {
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Cart items */}
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
                 <Card key={item.id} className="p-4">
@@ -120,7 +145,14 @@ const Cart = () => {
                     
                     <div className="flex-1">
                       <div className="flex justify-between">
-                        <h3 className="font-medium">{item.title}</h3>
+                        <div>
+                          <h3 className="font-medium">{item.title}</h3>
+                          {sellers[item.user_id] && (
+                            <p className="text-sm text-gray-500">
+                              Seller: {sellers[item.user_id].full_name}
+                            </p>
+                          )}
+                        </div>
                         <button 
                           onClick={() => removeItem(item.id)}
                           className="text-gray-400 hover:text-red-500"
@@ -176,7 +208,6 @@ const Cart = () => {
               ))}
             </div>
             
-            {/* Order summary */}
             <div>
               <Card className="p-4 space-y-4 lg:sticky lg:top-6">
                 <h3 className="font-medium text-lg">Order Summary</h3>
