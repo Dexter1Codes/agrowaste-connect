@@ -1,9 +1,25 @@
-
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Wallet, Package, Clock, History } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
+  const [activeListings, setActiveListings] = useState(0);
+
+  useEffect(() => {
+    const fetchListingsCount = async () => {
+      const { count } = await supabase
+        .from("waste_listings")
+        .select("*", { count: 'exact' })
+        .eq('available', true);
+      
+      setActiveListings(count || 0);
+    };
+
+    fetchListingsCount();
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -23,7 +39,7 @@ const Dashboard = () => {
               <Package className="h-5 w-5" />
               <h3 className="font-medium">Active Listings</h3>
             </div>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">{activeListings}</p>
           </Card>
           
           <Card className="p-6 space-y-2">

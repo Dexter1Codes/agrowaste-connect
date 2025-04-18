@@ -24,6 +24,7 @@ interface WasteListing {
   images: string[];
   created_at: string;
   user_id: string;
+  location: string;
 }
 
 const BrowseListings = () => {
@@ -321,6 +322,11 @@ const BrowseListings = () => {
                         <Badge variant="outline" className="mt-1">
                           {formatWasteType(listing.waste_type)}
                         </Badge>
+                        {listing.location && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            📍 {listing.location}
+                          </p>
+                        )}
                         <div className="flex items-center gap-1 mt-1">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />

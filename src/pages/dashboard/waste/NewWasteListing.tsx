@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +39,7 @@ const NewWasteListing = () => {
     quantity: "",
     unit: "",
     price: "",
+    location: "", // Add location field
   });
 
   // Fetch the current user on component mount
@@ -100,7 +100,8 @@ const NewWasteListing = () => {
           price: parseFloat(formData.price),
           images: imageUrls,
           available: true,
-          user_id: user.id, // Add the user ID to the record
+          user_id: user?.id,
+          location: formData.location, // Add location to insert
         })
         .select();
 
@@ -217,6 +218,16 @@ const NewWasteListing = () => {
               <p className="text-sm text-gray-500 mt-1">
                 You can upload multiple images. Supported formats: JPG, PNG
               </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Location</label>
+              <Input
+                required
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="e.g., Mumbai, Maharashtra"
+              />
             </div>
 
             <Button type="submit" disabled={isSubmitting} className="w-full">

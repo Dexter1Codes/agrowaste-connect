@@ -1,10 +1,26 @@
-
 import DealerLayout from "@/components/dealer/DealerLayout";
 import { Card } from "@/components/ui/card";
 import { ShoppingCart, Package, Clock, CreditCard, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const DealerDashboard = () => {
+  const [activeOffers, setActiveOffers] = useState(0);
+
+  useEffect(() => {
+    const fetchActiveOffers = async () => {
+      const { count } = await supabase
+        .from("waste_listings")
+        .select("*", { count: 'exact' })
+        .eq('available', true);
+      
+      setActiveOffers(count || 0);
+    };
+
+    fetchActiveOffers();
+  }, []);
+
   return (
     <DealerLayout>
       <div className="space-y-8">
@@ -24,7 +40,7 @@ const DealerDashboard = () => {
               <Package className="h-5 w-5" />
               <h3 className="font-medium">Active Offers</h3>
             </div>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">{activeOffers}</p>
           </Card>
           
           <Card className="p-6 space-y-2">
