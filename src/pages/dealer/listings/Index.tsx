@@ -91,7 +91,15 @@ const BrowseListings = () => {
         
       if (error) throw error;
       
-      setListings(data || []);
+      // Add location property if it's missing in any listing from the database
+      const listingsWithLocation = data?.map(listing => ({
+        ...listing,
+        location: listing.location || 'Unknown location'
+      })) || [];
+      
+      setListings(listingsWithLocation);
+      
+      console.log("Fetched listings:", listingsWithLocation);
     } catch (error) {
       console.error("Error fetching listings:", error);
       toast({
@@ -104,7 +112,7 @@ const BrowseListings = () => {
     }
   };
   
-  // Filter listings based on search query and filters
+  
   const filteredListings = listings.filter(listing => {
     // Search filter
     if (searchQuery && !listing.title.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -164,6 +172,7 @@ const BrowseListings = () => {
     return option ? option.label : type.replace(/_/g, ' ');
   };
   
+  
   return (
     <DealerLayout>
       <div className="space-y-6">
@@ -200,7 +209,7 @@ const BrowseListings = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filters sidebar */}
+          
           <Card className={`p-4 space-y-6 h-fit lg:sticky lg:top-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <h3 className="font-medium border-b pb-2">Filters</h3>
             
