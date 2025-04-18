@@ -11,6 +11,7 @@ export interface CartItem {
   max_quantity: number;
   unit: string;
   image?: string;
+  user_id: string; // Added user_id property
 }
 
 interface CartContextType {

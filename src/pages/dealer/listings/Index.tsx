@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DealerLayout from "@/components/dealer/DealerLayout";
@@ -24,6 +23,7 @@ interface WasteListing {
   price: number;
   images: string[];
   created_at: string;
+  user_id: string;
 }
 
 const BrowseListings = () => {
@@ -138,6 +138,7 @@ const BrowseListings = () => {
       max_quantity: listing.quantity,
       unit: listing.unit,
       image: listing.images?.[0] || undefined,
+      user_id: listing.user_id || "", // Make sure user_id is included
     });
   };
   

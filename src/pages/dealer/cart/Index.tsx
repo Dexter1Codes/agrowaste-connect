@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DealerLayout from "@/components/dealer/DealerLayout";
@@ -19,7 +20,9 @@ const Cart = () => {
   // Fetch seller information for each item
   useEffect(() => {
     const fetchSellers = async () => {
-      const sellerIds = [...new Set(items.map(item => item.user_id))];
+      const sellerIds = [...new Set(items
+        .filter(item => item.user_id) // Filter out items that don't have user_id
+        .map(item => item.user_id))];
       
       for (const sellerId of sellerIds) {
         const { data, error } = await supabase
@@ -147,7 +150,7 @@ const Cart = () => {
                       <div className="flex justify-between">
                         <div>
                           <h3 className="font-medium">{item.title}</h3>
-                          {sellers[item.user_id] && (
+                          {item.user_id && sellers[item.user_id] && (
                             <p className="text-sm text-gray-500">
                               Seller: {sellers[item.user_id].full_name}
                             </p>
