@@ -71,7 +71,7 @@ const NewWasteListing = () => {
       }
 
       // Create waste listing - ensure waste_type is properly typed
-      const { error: insertError } = await supabase
+      const { data, error: insertError } = await supabase
         .from("waste_listings")
         .insert({
           title: formData.title,
@@ -81,13 +81,15 @@ const NewWasteListing = () => {
           unit: formData.unit,
           price: parseFloat(formData.price),
           images: imageUrls,
-        });
+          available: true,
+        })
+        .select();
 
       if (insertError) throw insertError;
 
       toast({
         title: "Success",
-        description: "Your waste listing has been created.",
+        description: "Your waste listing has been created and is now available to dealers.",
       });
 
       navigate("/dashboard/waste");

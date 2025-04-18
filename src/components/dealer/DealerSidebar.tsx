@@ -1,91 +1,135 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { 
-  LayoutDashboard, 
-  ShoppingCart, 
-  MessageSquare, 
-  Settings,
-  Search,
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  LayoutDashboard,
+  Package,
   Truck,
+  MessageSquare,
   Star,
-  Book
+  BookOpen,
+  Settings,
+  LogOut,
+  ShoppingCart,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/contexts/CartContext";
+import { Badge } from "@/components/ui/badge";
 
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/dealer",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Browse Listings",
-    href: "/dealer/listings",
-    icon: Search,
-  },
-  {
-    title: "Orders & Offers",
-    href: "/dealer/orders",
-    icon: ShoppingCart,
-  },
-  {
-    title: "Messages",
-    href: "/dealer/messages",
-    icon: MessageSquare,
-  },
-  {
-    title: "Logistics",
-    href: "/dealer/logistics",
-    icon: Truck,
-  },
-  {
-    title: "Reviews",
-    href: "/dealer/reviews",
-    icon: Star,
-  },
-  {
-    title: "Learning Hub",
-    href: "/dealer/learning",
-    icon: Book,
-  },
-  {
-    title: "Settings",
-    href: "/dealer/settings",
-    icon: Settings,
-  },
-];
+interface NavItemProps {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+  active: boolean;
+  badge?: number;
+}
+
+const NavItem = ({ icon, label, href, active, badge }: NavItemProps) => (
+  <Link to={href}>
+    <Button
+      variant={active ? "default" : "ghost"}
+      className="w-full justify-start mb-1"
+    >
+      {icon}
+      <span className="ml-2">{label}</span>
+      {badge !== undefined && badge > 0 && (
+        <Badge className="ml-auto">{badge}</Badge>
+      )}
+    </Button>
+  </Link>
+);
 
 const DealerSidebar = () => {
   const location = useLocation();
+  const { getTotalItems } = useCart();
+  
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
+
+  const navItems = [
+    {
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      label: "Dashboard",
+      href: "/dealer",
+    },
+    {
+      icon: <Package className="h-5 w-5" />,
+      label: "Browse Listings",
+      href: "/dealer/listings",
+    },
+    {
+      icon: <ShoppingCart className="h-5 w-5" />,
+      label: "Cart",
+      href: "/dealer/cart",
+      badge: getTotalItems(),
+    },
+    {
+      icon: <Truck className="h-5 w-5" />,
+      label: "Orders & Offers",
+      href: "/dealer/orders",
+    },
+    {
+      icon: <MessageSquare className="h-5 w-5" />,
+      label: "Messages",
+      href: "/dealer/messages",
+    },
+    {
+      icon: <Truck className="h-5 w-5" />,
+      label: "Logistics",
+      href: "/dealer/logistics",
+    },
+    {
+      icon: <Star className="h-5 w-5" />,
+      label: "Reviews",
+      href: "/dealer/reviews",
+    },
+    {
+      icon: <BookOpen className="h-5 w-5" />,
+      label: "Learning",
+      href: "/dealer/learning",
+    },
+    {
+      icon: <Settings className="h-5 w-5" />,
+      label: "Settings",
+      href: "/dealer/settings",
+    },
+  ];
 
   return (
-    <div className="min-h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-4">
-        <h2 className="text-xl font-bold text-primary">AgriCycle | Dealer</h2>
+    <div className="h-full py-4 flex flex-col">
+      <div className="px-4 mb-6">
+        <h2 className="text-lg font-bold">WasteTrade</h2>
+        <p className="text-sm text-gray-500">Dealer Portal</p>
       </div>
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <li key={item.href}>
-                <Link
-                  to={item.href}
-                  className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors",
-                    isActive
-                      ? "bg-primary text-white"
-                      : "text-gray-600 hover:bg-primary-100"
-                  )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.title}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+
+      <ScrollArea className="flex-1 px-2">
+        <div className="space-y-1">
+          {navItems.map((item) => (
+            <NavItem
+              key={item.href}
+              icon={item.icon}
+              label={item.label}
+              href={item.href}
+              active={location.pathname === item.href}
+              badge={item.badge}
+            />
+          ))}
+        </div>
+      </ScrollArea>
+
+      <div className="mt-auto pt-4 px-2 border-t">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50 mb-1"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="ml-2">Logout</span>
+        </Button>
+      </div>
     </div>
   );
 };
