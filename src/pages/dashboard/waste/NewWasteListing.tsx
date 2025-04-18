@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -32,6 +32,7 @@ const NewWasteListing = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<File[]>([]);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -40,6 +41,18 @@ const NewWasteListing = () => {
     unit: "",
     price: "",
   });
+
+  // Fetch the current user on component mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setUser({ id: data.user.id });
+      }
+    };
+    
+    fetchUser();
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -52,6 +65,11 @@ const NewWasteListing = () => {
     setIsSubmitting(true);
 
     try {
+      // Check if user is authenticated
+      if (!user) {
+        throw new Error("You must be logged in to create a listing");
+      }
+
       const imageUrls: string[] = [];
 
       // Upload images
@@ -82,6 +100,7 @@ const NewWasteListing = () => {
           price: parseFloat(formData.price),
           images: imageUrls,
           available: true,
+          user_id: user.id, // Add the user ID to the record
         })
         .select();
 
@@ -94,6 +113,7 @@ const NewWasteListing = () => {
 
       navigate("/dashboard/waste");
     } catch (error: any) {
+      console.error("Error creating listing:", error);
       toast({
         title: "Error",
         description: error.message,
