@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
@@ -7,7 +6,8 @@ import {
   ShoppingCart, 
   Book, 
   MessageSquare, 
-  Settings 
+  Settings,
+  ShieldCheck
 } from "lucide-react";
 import {
   Sidebar as ShadcnSidebar,
@@ -37,6 +37,11 @@ const navItems = [
     title: "Learning",
     href: "/dashboard/learning",
     icon: Book,
+  },
+  {
+    title: "Surakshit Bharat",
+    href: "/dashboard/surakshit",
+    icon: ShieldCheck,
   },
   {
     title: "Messages",

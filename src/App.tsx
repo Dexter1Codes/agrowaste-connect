@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import Learning from "./pages/dashboard/learning/Index";
 import Messages from "./pages/dashboard/messages/Index";
 import Settings from "./pages/dashboard/settings/Index";
 import ResetPassword from "./pages/ResetPassword";
+import SurakshitBharatPage from "./pages/dashboard/surakshit/Index";
 import DealerDashboard from "./pages/dealer/Index";
 import BrowseListings from "./pages/dealer/listings/Index";
 import DealerCart from "./pages/dealer/cart/Index";
@@ -54,6 +54,7 @@ const App = () => (
               <Route path="/dashboard/learning" element={<ProtectedRoute requiredRole="farmer"><Learning /></ProtectedRoute>} />
               <Route path="/dashboard/messages" element={<ProtectedRoute requiredRole="farmer"><Messages /></ProtectedRoute>} />
               <Route path="/dashboard/settings" element={<ProtectedRoute requiredRole="farmer"><Settings /></ProtectedRoute>} />
+              <Route path="/dashboard/surakshit" element={<ProtectedRoute requiredRole="farmer"><SurakshitBharatPage /></ProtectedRoute>} />
               
               {/* Dealer Dashboard Routes - Protected for dealers */}
               <Route path="/dealer" element={<ProtectedRoute requiredRole="dealer"><DealerDashboard /></ProtectedRoute>} />
