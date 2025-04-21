@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +40,7 @@ const NewWasteListing = () => {
     quantity: "",
     unit: "",
     price: "",
-    location: "", // Add location field
+    location: "", // Location field
   });
 
   // Fetch the current user on component mount
@@ -101,7 +102,7 @@ const NewWasteListing = () => {
           images: imageUrls,
           available: true,
           user_id: user?.id,
-          location: formData.location, // Add location to insert
+          location: formData.location, // Include location field
         })
         .select();
 

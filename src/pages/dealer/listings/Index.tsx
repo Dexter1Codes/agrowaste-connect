@@ -26,7 +26,7 @@ interface WasteListing {
   available?: boolean;
   currency?: string;
   updated_at?: string;
-  location?: string | null; // Adding location as an optional property
+  location?: string | null;
 }
 
 const wasteTypeOptions = [
