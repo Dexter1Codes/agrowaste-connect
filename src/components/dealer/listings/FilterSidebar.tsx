@@ -74,10 +74,12 @@ const FilterSidebar = ({
           <SelectValue placeholder="Select location" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="bangalore">Bangalore</SelectItem>
-          <SelectItem value="delhi">Delhi</SelectItem>
+          <SelectItem value="">All Locations</SelectItem>
           <SelectItem value="mumbai">Mumbai</SelectItem>
+          <SelectItem value="delhi">Delhi</SelectItem>
+          <SelectItem value="bangalore">Bangalore</SelectItem>
           <SelectItem value="chennai">Chennai</SelectItem>
+          <SelectItem value="pind">Pind</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -90,10 +92,10 @@ const FilterSidebar = ({
         </span>
       </div>
       <Slider
-        defaultValue={[0, 100]}
+        defaultValue={[0, 1000]}
         min={0}
-        max={100}
-        step={1}
+        max={1000}
+        step={10}
         value={priceRange}
         onValueChange={value => setPriceRange(value as [number, number])}
       />

@@ -50,7 +50,7 @@ const BrowseListings = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]); // Increasing max price range
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [minRating, setMinRating] = useState<number>(0);
   const [showFilters, setShowFilters] = useState(false);
@@ -65,11 +65,7 @@ const BrowseListings = () => {
         table: "waste_listings",
       }, payload => {
         console.log("New listing received:", payload);
-        // Create a complete WasteListing object with all required properties
-        const newListing: WasteListing = {
-          ...payload.new as WasteListing,
-          location: (payload.new as any).location || "Unknown location"
-        };
+        const newListing = payload.new as WasteListing;
         
         setListings(prev => [newListing, ...prev]);
         toast({
@@ -93,11 +89,7 @@ const BrowseListings = () => {
         table: "waste_listings",
       }, payload => {
         console.log("Listing updated:", payload);
-        // Create a complete WasteListing object with all required properties
-        const updatedListing: WasteListing = {
-          ...payload.new as WasteListing,
-          location: (payload.new as any).location || "Unknown location"
-        };
+        const updatedListing = payload.new as WasteListing;
         
         setListings(prev =>
           prev.map(listing =>
@@ -127,22 +119,26 @@ const BrowseListings = () => {
   const fetchListings = async () => {
     try {
       setIsLoading(true);
+      console.log("Fetching listings...");
+      
       const { data, error } = await supabase
         .from("waste_listings")
         .select("*")
         .eq("available", true)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching listings:", error);
+        throw error;
+      }
 
-      // Add location property to listings if not already present
-      const listingsWithLocation: WasteListing[] = data?.map(listing => ({
-        ...listing as WasteListing,
-        location: (listing as any).location || "Unknown location"
-      })) || [];
-
-      setListings(listingsWithLocation);
-      console.log("Fetched listings:", listingsWithLocation);
+      console.log("Fetched listings raw data:", data);
+      
+      // Convert and type-cast the data to WasteListing[]
+      const wasteListing = data as WasteListing[];
+      setListings(wasteListing);
+      
+      console.log("Listings after set:", wasteListing);
     } catch (error) {
       console.error("Error fetching listings:", error);
       toast({
@@ -157,7 +153,7 @@ const BrowseListings = () => {
 
   const filteredListings = listings.filter(listing => {
     // Search filter
-    if (searchQuery && !listing.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+    if (searchQuery && !listing.title?.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
     // Waste type filter
@@ -168,7 +164,10 @@ const BrowseListings = () => {
     if (listing.price < priceRange[0] || listing.price > priceRange[1]) {
       return false;
     }
-    // No real location data/rating yet
+    // Location filter if selected
+    if (selectedLocation && listing.location !== selectedLocation) {
+      return false;
+    }
     return true;
   });
 
@@ -183,15 +182,23 @@ const BrowseListings = () => {
       image: listing.images?.[0] || undefined,
       user_id: listing.user_id || "",
     });
+    
+    toast({
+      title: "Added to cart",
+      description: `${listing.title} has been added to your cart.`,
+    });
   };
 
   const handleResetFilters = () => {
     setSearchQuery("");
     setSelectedTypes([]);
-    setPriceRange([0, 100]);
+    setPriceRange([0, 1000]);
     setSelectedLocation("");
     setMinRating(0);
   };
+
+  console.log("Filtered listings count:", filteredListings.length);
+  console.log("Total listings count:", listings.length);
 
   return (
     <DealerLayout>
@@ -224,6 +231,13 @@ const BrowseListings = () => {
               <div className="flex justify-center items-center h-40">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
+            ) : listings.length === 0 ? (
+              <Card className="p-6 text-center">
+                <h3 className="font-medium mb-2">No listings available</h3>
+                <p className="text-gray-500">
+                  There are currently no waste listings available.
+                </p>
+              </Card>
             ) : filteredListings.length === 0 ? (
               <Card className="p-6 text-center">
                 <h3 className="font-medium mb-2">No listings found</h3>
