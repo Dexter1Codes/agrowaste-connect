@@ -26,7 +26,7 @@ interface WasteListing {
   available?: boolean;
   currency?: string;
   updated_at?: string;
-  location?: string | null; // Only used at UI level, not in DB
+  location?: string | null; // Adding location as an optional property
 }
 
 const wasteTypeOptions = [
@@ -65,10 +65,12 @@ const BrowseListings = () => {
         table: "waste_listings",
       }, payload => {
         console.log("New listing received:", payload);
-        const newListing = {
-          ...payload.new,
-          location: (payload.new as any).location ?? "Unknown location",
+        // Create a complete WasteListing object with all required properties
+        const newListing: WasteListing = {
+          ...payload.new as WasteListing,
+          location: (payload.new as any).location || "Unknown location"
         };
+        
         setListings(prev => [newListing, ...prev]);
         toast({
           title: "New listing available!",
@@ -91,10 +93,12 @@ const BrowseListings = () => {
         table: "waste_listings",
       }, payload => {
         console.log("Listing updated:", payload);
-        const updatedListing = {
-          ...payload.new,
-          location: (payload.new as any).location ?? "Unknown location",
+        // Create a complete WasteListing object with all required properties
+        const updatedListing: WasteListing = {
+          ...payload.new as WasteListing,
+          location: (payload.new as any).location || "Unknown location"
         };
+        
         setListings(prev =>
           prev.map(listing =>
             listing.id === updatedListing.id ? updatedListing : listing
@@ -131,12 +135,11 @@ const BrowseListings = () => {
 
       if (error) throw error;
 
-      // Add location property as 'Unknown location' (since not in schema)
-      const listingsWithLocation =
-        data?.map(listing => ({
-          ...listing,
-          location: (listing as any).location ?? "Unknown location",
-        })) || [];
+      // Add location property to listings if not already present
+      const listingsWithLocation: WasteListing[] = data?.map(listing => ({
+        ...listing as WasteListing,
+        location: (listing as any).location || "Unknown location"
+      })) || [];
 
       setListings(listingsWithLocation);
       console.log("Fetched listings:", listingsWithLocation);
