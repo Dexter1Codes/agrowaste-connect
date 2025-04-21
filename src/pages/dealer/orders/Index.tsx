@@ -20,15 +20,88 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/providers/AuthProvider";
+import { useEffect, useState } from "react";
+
+interface OrderType {
+  id: string;
+  buyer_id: string;
+  seller_id: string;
+  waste_listing_id: string;
+  total_price: number;
+  quantity: number;
+  status: string;
+  created_at: string;
+  listing: any;
+  farmer_name: string;
+}
 
 const DealerOrders = () => {
+  const { user } = useAuth();
+  const [orders, setOrders] = useState<OrderType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch orders for this dealer and pull in listing + farmer name
+  useEffect(() => {
+    async function fetchOrders() {
+      setLoading(true);
+      if (!user) return;
+      const { data: orderData, error } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          listing:waste_listing_id (
+            id, title, quantity, unit, price, currency, user_id
+          )
+        `)
+        .eq("buyer_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch all farmer names in one go
+      const sellerIds = [
+        ...new Set((orderData || []).map((o: any) => o.listing?.user_id).filter(Boolean)),
+      ];
+
+      let farmerNames: Record<string, string> = {};
+
+      if (sellerIds.length > 0) {
+        const { data: farmerProfiles } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", sellerIds);
+
+        farmerProfiles?.forEach((profile: any) => {
+          farmerNames[profile.id] = profile.full_name || "Unknown Farmer";
+        });
+      }
+
+      const normalizedOrders = (orderData || []).map((order: any) => ({
+        ...order,
+        farmer_name: farmerNames[order.listing?.user_id] || "Unknown Farmer",
+      }));
+
+      setOrders(normalizedOrders);
+      setLoading(false);
+    }
+    fetchOrders();
+  }, [user]);
+
   return (
     <DealerLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-900">Orders & Offers Management</h1>
         
-        <Tabs defaultValue="offers">
+        <Tabs defaultValue="orders">
           <TabsList className="grid w-full grid-cols-2">
+            {/* You can add Offers logic later */}
             <TabsTrigger value="offers">My Offers</TabsTrigger>
             <TabsTrigger value="orders">My Orders</TabsTrigger>
           </TabsList>
@@ -37,81 +110,9 @@ const DealerOrders = () => {
             <Card className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h2 className="text-lg font-medium">Submitted Offers</h2>
-                <Button>Make New Offer</Button>
+                {/* You can add an offer creation button if needed */}
               </div>
-              
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Offered Price</TableHead>
-                      <TableHead>Farmer</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">Coconut Husk</TableCell>
-                      <TableCell>200kg</TableCell>
-                      <TableCell>₹7/kg</TableCell>
-                      <TableCell>Ramesh Farms</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 text-yellow-500 mr-1" />
-                          <span className="text-yellow-500 text-sm">Pending</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button variant="ghost" size="sm">
-                            <FileEdit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Rice Husks</TableCell>
-                      <TableCell>500kg</TableCell>
-                      <TableCell>₹4.5/kg</TableCell>
-                      <TableCell>Green Valley</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" />
-                          <span className="text-green-500 text-sm">Accepted</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button size="sm" variant="outline">
-                          Checkout
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">Sugarcane Bagasse</TableCell>
-                      <TableCell>100kg</TableCell>
-                      <TableCell>₹2.5/kg</TableCell>
-                      <TableCell>Pure Organics</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <XCircle className="h-4 w-4 text-red-500 mr-1" />
-                          <span className="text-red-500 text-sm">Rejected</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button size="sm" variant="ghost">
-                          Make New Offer
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
+              <p className="text-gray-400 italic">Feature coming soon: You'll see your submitted offers here.</p>
             </Card>
           </TabsContent>
           
@@ -120,63 +121,70 @@ const DealerOrders = () => {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h2 className="text-lg font-medium">Order History</h2>
               </div>
-              
+              {loading ? (
+                <div className="text-center text-gray-500 py-8">Loading orders...</div>
+              ) : orders.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">No orders found!</div>
+              ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Order ID</TableHead>
-                      <TableHead>Items</TableHead>
-                      <TableHead>Total Amount</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead>Waste Item</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead>Seller</TableHead>
+                      <TableHead>Total</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell className="font-medium">#ORD-2023-001</TableCell>
-                      <TableCell>Rice Husks (200kg)</TableCell>
-                      <TableCell>₹1,000</TableCell>
-                      <TableCell>Apr 2, 2025</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Truck className="h-4 w-4 text-blue-500 mr-1" />
-                          <span className="text-blue-500 text-sm">Shipping</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">Track</Button>
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell className="font-medium">#ORD-2023-002</TableCell>
-                      <TableCell>Coconut Husk (100kg)</TableCell>
-                      <TableCell>₹800</TableCell>
-                      <TableCell>Mar 28, 2025</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" />
-                          <span className="text-green-500 text-sm">Delivered</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">Review</Button>
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    {orders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium">#{order.id.slice(0,8)}</TableCell>
+                        <TableCell>
+                          {order.listing?.title || <span className="text-gray-400">[Deleted]</span>}
+                        </TableCell>
+                        <TableCell>
+                          {order.quantity} {order.listing?.unit}
+                        </TableCell>
+                        <TableCell>{order.farmer_name}</TableCell>
+                        <TableCell>
+                          {order.total_price}
+                          {order.listing?.currency === "INR" || !order.listing?.currency ? " ₹" : ` ${order.listing?.currency}`}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            {
+                              order.status === "pending" ? (
+                                <Clock className="h-4 w-4 text-yellow-500 mr-1" />
+                              ) : order.status === "shipped" ? (
+                                <Truck className="h-4 w-4 text-blue-500 mr-1" />
+                              ) : order.status === "delivered" ? (
+                                <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" />
+                              ) : order.status === "rejected" ? (
+                                <XCircle className="h-4 w-4 text-red-500 mr-1" />
+                              ) : (
+                                <Clock className="h-4 w-4 text-gray-400 mr-1" />
+                              )
+                            }
+                            <span className="text-sm capitalize">{order.status || "pending"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(order.created_at).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </div>
+              )}
             </Card>
           </TabsContent>
         </Tabs>
