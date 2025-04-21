@@ -74,7 +74,7 @@ const FilterSidebar = ({
           <SelectValue placeholder="Select location" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All Locations</SelectItem>
+          <SelectItem value="all">All Locations</SelectItem>
           <SelectItem value="mumbai">Mumbai</SelectItem>
           <SelectItem value="delhi">Delhi</SelectItem>
           <SelectItem value="bangalore">Bangalore</SelectItem>

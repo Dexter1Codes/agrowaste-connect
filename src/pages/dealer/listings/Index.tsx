@@ -51,7 +51,7 @@ const BrowseListings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]); // Increasing max price range
-  const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [minRating, setMinRating] = useState<number>(0);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -165,7 +165,7 @@ const BrowseListings = () => {
       return false;
     }
     // Location filter if selected
-    if (selectedLocation && listing.location !== selectedLocation) {
+    if (selectedLocation !== "all" && listing.location !== selectedLocation) {
       return false;
     }
     return true;
@@ -193,7 +193,7 @@ const BrowseListings = () => {
     setSearchQuery("");
     setSelectedTypes([]);
     setPriceRange([0, 1000]);
-    setSelectedLocation("");
+    setSelectedLocation("all");
     setMinRating(0);
   };
 
