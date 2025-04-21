@@ -24,7 +24,7 @@ interface WasteListing {
   images: string[];
   created_at: string;
   user_id: string;
-  location: string | null; // Add location property with null as possible value
+  location: string | null; // Explicitly define location property as string | null
   available?: boolean;
   currency?: string;
   updated_at?: string;
