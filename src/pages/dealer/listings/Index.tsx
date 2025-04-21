@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DealerLayout from "@/components/dealer/DealerLayout";
@@ -24,7 +25,10 @@ interface WasteListing {
   images: string[];
   created_at: string;
   user_id: string;
-  location: string;
+  location: string | null; // Add location property with null as possible value
+  available?: boolean;
+  currency?: string;
+  updated_at?: string;
 }
 
 const BrowseListings = () => {
@@ -48,6 +52,7 @@ const BrowseListings = () => {
         schema: 'public', 
         table: 'waste_listings',
       }, payload => {
+        console.log("New listing received:", payload);
         const newListing = payload.new as WasteListing;
         
         // Add the new listing to our state
@@ -69,6 +74,30 @@ const BrowseListings = () => {
             </Button>
           )
         });
+      })
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'waste_listings',
+      }, payload => {
+        console.log("Listing updated:", payload);
+        const updatedListing = payload.new as WasteListing;
+        
+        // Update the listing in our state
+        setListings(prev => prev.map(listing => 
+          listing.id === updatedListing.id ? updatedListing : listing
+        ));
+      })
+      .on('postgres_changes', { 
+        event: 'DELETE', 
+        schema: 'public', 
+        table: 'waste_listings',
+      }, payload => {
+        console.log("Listing deleted:", payload);
+        const deletedListingId = payload.old.id;
+        
+        // Remove the listing from our state
+        setListings(prev => prev.filter(listing => listing.id !== deletedListingId));
       })
       .subscribe();
     
