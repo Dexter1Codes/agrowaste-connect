@@ -39,7 +39,8 @@ interface OrderType {
 }
 
 const DealerOrders = () => {
-  const { user } = useAuth();
+  const { session } = useAuth();
+  const user = session?.user;
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(true);
 
